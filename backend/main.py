@@ -53,6 +53,16 @@ async def register_worker(reg: _WorkerReg):
     return {"status": "ok", "url": reg.url}
 
 
+# ── Photo proxy — fetches from Colab worker's Google Drive storage ─
+@app.get("/api/photos/{photo_path:path}", include_in_schema=False)
+async def proxy_photo(photo_path: str):
+    """Proxy check-in photos stored on Google Drive via Colab worker."""
+    import remote_recognizer
+    from fastapi.responses import Response
+    img_bytes = await remote_recognizer.get_photo(photo_path)
+    return Response(content=img_bytes, media_type="image/jpeg")
+
+
 # ── Health ───────────────────────────────────────────────────────
 @app.get("/health", tags=["health"])
 async def health_check():

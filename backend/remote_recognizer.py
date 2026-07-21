@@ -74,7 +74,18 @@ async def register_user(user_id: str, image_bytes_list: list[bytes]) -> int:
         raise HTTPException(status_code=503, detail=f"Cannot reach recognition worker: {e}")
 
 
-async def delete_user(user_id: str) -> None:
+async def get_photo(photo_path: str) -> bytes:
+    """Proxy a photo from the Colab worker's Google Drive storage."""
+    url = get_url()
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get(f"{url}/photos/{photo_path}")
+            resp.raise_for_status()
+            return resp.content
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail="Photo not found on worker.")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=503, detail=f"Cannot reach recognition worker: {e}")
     """Tell worker to remove all embeddings for this user."""
     url = get_url()
     try:
