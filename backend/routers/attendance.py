@@ -8,7 +8,6 @@ from database import get_db
 from models import AttendanceRecord, CheckInResult
 from dependencies import get_current_user, require_admin
 import remote_recognizer
-import photo_service
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 
@@ -64,12 +63,12 @@ async def check_in(
                 message=f"Already checked in within {DUPLICATE_CHECKIN_HOURS}h. Use force=true to override.",
             )
 
-    # Upload check-in photo to Supabase Storage (non-blocking failure)
-    photo_url = await photo_service.upload_photo(user_id, img_bytes, timestamp)
+    # photo_path comes from Colab worker (saved to Google Drive)
+    photo_path = result.get("photo_path")  # e.g. "user_id/checkin_TIMESTAMP.jpg"
 
     cursor.execute(
         "INSERT INTO attendance (id, user_id, timestamp, confidence, photo_path) VALUES (?, ?, ?, ?, ?)",
-        (str(uuid.uuid4()), user_id, timestamp, confidence, photo_url),
+        (str(uuid.uuid4()), user_id, timestamp, confidence, photo_path),
     )
     db.commit()
 
@@ -103,7 +102,7 @@ async def list_attendance(
     cursor.execute(query, params)
     return [AttendanceRecord(id=r["id"], user_id=r["user_id"], user_name=r["name"],
                              timestamp=r["timestamp"], confidence=r["confidence"],
-                             photo_url=r["photo_path"])
+                             photo_url=f"/api/photos/{r['photo_path']}" if r["photo_path"] else None)
             for r in cursor.fetchall()]
 
 
@@ -135,5 +134,5 @@ async def get_user_attendance(
     cursor.execute(query, params)
     return [AttendanceRecord(id=r["id"], user_id=r["user_id"], user_name=r["name"],
                              timestamp=r["timestamp"], confidence=r["confidence"],
-                             photo_url=r["photo_path"])
+                             photo_url=f"/api/photos/{r['photo_path']}" if r["photo_path"] else None)
             for r in cursor.fetchall()]
