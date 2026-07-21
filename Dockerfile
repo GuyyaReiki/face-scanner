@@ -1,16 +1,27 @@
+# ── Stage 1: Build React frontend ────────────────────────────
+FROM node:20-slim AS frontend-builder
+
+WORKDIR /app/frontend
+
+COPY frontend/package*.json ./
+RUN npm ci --silent
+
+COPY frontend/ ./
+RUN npm run build
+
+
+# ── Stage 2: Python runtime ───────────────────────────────────
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend source
 COPY backend/ ./backend/
 
-# Copy built React frontend (run `npm run build` first)
-COPY frontend/dist/ ./frontend/dist/
+# Copy the built React assets from stage 1
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist/
 
 WORKDIR /app/backend
 
