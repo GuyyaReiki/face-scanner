@@ -74,9 +74,9 @@ export default function AttendancePage() {
 
     const header = ['ชื่อ', 'รหัสพนักงาน', 'เวลาเข้างาน', 'ความแม่นยำ (%)']
     const rows = records.map(r => [
-      r.name || '',
-      r.employee_id || '',
-      r.check_in_time || '',
+      r.user_name || '',
+      r.user_id || '',
+      r.timestamp || '',
       r.confidence != null ? (parseFloat(r.confidence) * 100).toFixed(1) : ''
     ])
 
@@ -208,12 +208,12 @@ export default function AttendancePage() {
                   >
                     <td className="py-4 px-6">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                        {record.name?.charAt(0)?.toUpperCase() || '?'}
+                        {record.user_name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     </td>
-                    <td className="py-4 px-6 font-medium text-gray-800">{record.name || '-'}</td>
-                    <td className="py-4 px-6 text-gray-600">{record.employee_id || '-'}</td>
-                    <td className="py-4 px-6 text-gray-600">{formatDateTime(record.check_in_time)}</td>
+                    <td className="py-4 px-6 font-medium text-gray-800">{record.user_name || '-'}</td>
+                    <td className="py-4 px-6 text-gray-600 text-sm font-mono">{record.user_id?.slice(0, 8) || '-'}</td>
+                    <td className="py-4 px-6 text-gray-600">{formatDateTime(record.timestamp)}</td>
                     <td className={`py-4 px-6 text-right ${getConfidenceColor(record.confidence)}`}>
                       {formatConfidence(record.confidence)}
                     </td>
