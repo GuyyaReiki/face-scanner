@@ -35,9 +35,7 @@ async def check_in(
     except FaceServiceError as e:
         raise HTTPException(status_code=503, detail=f"Face service unavailable: {str(e)}")
     except Exception as e:
-        if "no face" in str(e).lower() or confidence is None and user_id is None:
-            raise HTTPException(status_code=422, detail="No face detected in the provided image.")
-        raise
+        raise HTTPException(status_code=500, detail=f"Face recognition error: {str(e)}")
 
     if user_id is None:
         return CheckInResult(
