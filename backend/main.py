@@ -85,19 +85,28 @@ else:
 # ── Startup / shutdown ───────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
-    from database import init_db
     import database
     logger.info("Initializing database...")
-    database._db_connection = init_db(DB_PATH)
-    logger.info("Database ready.")
+    try:
+        database._db_connection = database.init_db(DB_PATH)
+        logger.info("Database ready.")
+    except Exception as e:
+        logger.error(
+            "DB init failed at startup: %s\n"
+            "If using Supabase, ensure DATABASE_URL uses the POOLER connection string "
+            "(port 6543, IPv4) not the direct connection (port 5432, IPv6).\n"
+            "Supabase → Settings → Database → Connection pooling → Transaction mode.",
+            e,
+        )
+        # Don't crash — requests will retry init via get_db_connection()
+        # Health check will still pass so Railway knows the container is up
 
-    # Log worker URL status
     import remote_recognizer
     url = os.getenv("RECOGNIZER_URL") or remote_recognizer._recognizer_url
     if url:
         logger.info("Recognizer URL: %s", url)
     else:
-        logger.warning("RECOGNIZER_URL not set — face recognition will return 503 until worker registers.")
+        logger.warning("RECOGNIZER_URL not set — face recognition returns 503 until Colab worker registers.")
 
 
 @app.on_event("shutdown")
