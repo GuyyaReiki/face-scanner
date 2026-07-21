@@ -63,13 +63,13 @@ export default function ScanPage() {
           if (response.data.matched) {
             setStatus({
               type: 'success',
-              message: `ยินดีต้อนรับ ${response.data.name}`,
-              time: response.data.check_in_time
+              message: `ยินดีต้อนรับ ${response.data.user_name}`,
+              time: response.data.timestamp
             })
 
             setRecentCheckins(prev => [{
-              name: response.data.name,
-              time: response.data.check_in_time,
+              name: response.data.user_name,
+              time: response.data.timestamp,
               timestamp: new Date().toISOString()
             }, ...prev.slice(0, 4)])
           } else {

@@ -7,6 +7,8 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`
   }
+  // ngrok free tier shows interstitial page — this header skips it for API calls
+  config.headers['ngrok-skip-browser-warning'] = 'true'
   return config
 })
 
