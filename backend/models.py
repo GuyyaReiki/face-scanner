@@ -21,6 +21,7 @@ class AttendanceRecord(BaseModel):
     user_name: str
     timestamp: str
     confidence: float
+    photo_url: Optional[str] = None
 
 
 class CheckInResult(BaseModel):
