@@ -1,6 +1,5 @@
 import sqlite3
 import os
-from contextlib import contextmanager
 from typing import Generator
 
 
@@ -85,11 +84,7 @@ def get_db_connection() -> sqlite3.Connection:
     return _db_connection
 
 
-@contextmanager
 def get_db() -> Generator[sqlite3.Connection, None, None]:
-    """FastAPI dependency that provides database connection."""
+    """FastAPI dependency that provides database connection (plain generator, no @contextmanager)."""
     conn = get_db_connection()
-    try:
-        yield conn
-    finally:
-        pass
+    yield conn
