@@ -41,10 +41,15 @@ app.include_router(users_router.router)
 app.include_router(attendance_router.router)
 app.include_router(auth_router.router)
 
-# Serve React frontend — static assets + SPA catch-all
+# /health must be registered BEFORE the catch-all SPA route
+@app.get("/health", tags=["health"])
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok", "timestamp": datetime.utcnow().isoformat() + "Z"}
+
+# Serve React frontend — static assets + SPA catch-all (registered last)
 frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
 if frontend_dist.exists():
-    # Serve Vite-generated assets (JS, CSS, images)
     assets_dir = frontend_dist / "assets"
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
@@ -58,12 +63,6 @@ if frontend_dist.exists():
         return JSONResponse(status_code=404, content={"detail": "Frontend not built. Run: cd frontend && npm run build"})
 else:
     logger.info("Frontend dist not found at %s — skipping static mount.", frontend_dist)
-
-
-@app.get("/health", tags=["health"])
-async def health_check():
-    """Health check endpoint — always accessible without API key."""
-    return {"status": "ok", "timestamp": datetime.utcnow().isoformat() + "Z"}
 
 
 @app.on_event("startup")
