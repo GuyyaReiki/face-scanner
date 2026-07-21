@@ -6,7 +6,15 @@ from typing import Generator
 
 def init_db(db_path: str) -> sqlite3.Connection:
     """Initialize database with tables and WAL mode enabled."""
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    except OSError as e:
+        # Drive not mounted or path inaccessible — fall back to local storage
+        import tempfile
+        fallback = os.path.join(tempfile.gettempdir(), "face_scanner.db")
+        print(f"WARNING: Cannot create DB at {db_path}: {e}")
+        print(f"WARNING: Falling back to local DB at {fallback}")
+        db_path = fallback
 
     conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL")
